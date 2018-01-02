@@ -1,0 +1,96 @@
+html {
+  background-color: #1d1f21;
+  color: #dedede; }
+
+.main .list {
+  background-color: #222426; }
+  .main .list .room {
+    border: 1px solid black; }
+  .main .list input[type="radio"]:checked + label {
+    background-color: #292c2f; }
+.main .view {
+  color: white;
+  background-color: #35393c; }
+  .main .view .input {
+    background-color: #292c2f; }
+    .main .view .input input {
+      color: #ebebeb; }
+    .main .view .input button {
+      color: #dedede;
+      background-color: #43484c; }
+
+html, body {
+  margin: 0; }
+
+.login #header {
+  height: 40vh; }
+.login form input, .login form button {
+  border: 1px solid white;
+  margin: 5px;
+  padding: 5px; }
+.login form button {
+  margin-right: 0; }
+
+.main {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden; }
+  .main .list {
+    width: 30vw;
+    height: 100vh;
+    display: inline-block;
+    overflow: hidden;
+    overflow-y: auto; }
+    .main .list .room_radio {
+      display: none; }
+    .main .list label {
+      height: 100px;
+      width: 100%;
+      cursor: pointer;
+      display: block; }
+      .main .list label img {
+        margin: 10px;
+        vertical-align: top; }
+      .main .list label #name {
+        font-size: 140%;
+        font-weight: bold;
+        margin-top: 10px;
+        display: inline-block; }
+  .main .view {
+    width: 69.8vw;
+    height: 100vh;
+    float: right;
+    display: inline-block;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column; }
+    .main .view .messages {
+      height: vh;
+      flex: 1; }
+    .main .view .input {
+      padding: 12px;
+      display: flex;
+      flex-direction: row; }
+      .main .view .input textarea {
+        border: none;
+        background: transparent;
+        margin-right: 12px;
+        flex: 1;
+        resize: none;
+        overflow: hidden;
+        overflow-y: auto;
+        outline: none;
+        max-height: 100px; }
+      .main .view .input button {
+        border: none;
+        padding: 8px; }
+
+.no-select {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none; }
+
+/*# sourceMappingURL=layout.css.map */

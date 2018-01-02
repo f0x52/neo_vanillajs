@@ -1,0 +1,108 @@
+@import "colors";
+
+html, body {
+    margin: 0;
+}
+
+.login {
+    #header {
+        height: 40vh;
+    }
+
+    form {
+        input, button {
+            border: 1px solid white;
+            margin: 5px;
+            padding: 5px;
+        }
+
+        button {
+            margin-right: 0;
+        }
+    }
+}
+
+.main {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+
+    .list {
+        width: 30vw;
+        height: 100vh;
+        display: inline-block;
+        overflow: hidden;
+        overflow-y: auto;
+
+        .room_radio {
+            display: none;
+        }
+
+        label {
+            height: 100px;
+            width: 100%;
+            cursor: pointer;
+            display: block;
+
+            img {
+                margin: 10px;
+                vertical-align: top;
+            }
+
+            #name {
+                font-size: 140%;
+                font-weight: bold;
+                margin-top: 10px;
+                display: inline-block;
+            }
+        }
+    }
+
+    .view {
+        width: 69.8vw;
+        height: 100vh;
+        float: right;
+        display: inline-block;
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column;
+
+        .messages {
+            height: vh;
+            flex: 1;
+        }
+
+        .input {
+            padding: 12px;
+            display: flex;
+            flex-direction: row;
+
+            textarea {
+                border: none;
+                background: transparent;
+                margin-right: 12px;
+                flex: 1;
+
+                resize: none;
+                overflow: hidden;
+                overflow-y: auto;
+                outline: none;
+                max-height: 100px;
+            }
+
+            button {
+                border: none;
+                padding: 8px;
+            }
+        }
+    }
+}
+
+.no-select {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}

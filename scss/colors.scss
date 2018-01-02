@@ -1,0 +1,37 @@
+$fg: #dedede;
+$bg: #1d1f21;
+
+html {
+    background-color: $bg;
+    color: $fg;
+}
+
+.main {
+    .list {
+        background-color: lighten($bg, 2);
+        .room {
+            border: 1px solid black;
+        }
+        input[type="radio"]:checked + label {
+             background-color: lighten($bg, 5);
+        }
+    }
+
+    .view {
+        color: lighten($fg, 90);
+        background-color: lighten($bg, 10);
+
+        .input {
+            background-color: lighten($bg, 5);
+
+            input {
+                color: lighten($fg, 5);
+            }
+
+            button {
+                color: $fg;
+                background-color: lighten($bg, 16);
+            }
+        }
+    }
+}

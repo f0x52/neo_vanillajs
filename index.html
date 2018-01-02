@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=512px" />
+        <title>Neo</title>
+        <link href="/css/layout.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <div class="login">
+            <center>
+                <img id="header" src="/img/neo_full.png">
+                <form id="login">
+                    <input id="user" type="text" placeholder="username"><br>
+                    <input id="pass" type="password" placeholder="password"><br>
+                    <button type="submit">Log in</button>
+                </form>
+            </center>
+        </div>
+
+        <div class="main" style="display: none">
+            <div class="list no-select">
+                <div id="room_1" class="room_item">
+                    <input id="room1" type="radio" name="room_radio" class="room_radio" checked="checked">
+                    <label for="room1" class="room" id="room1">
+                        <img src="/img/neo.png" height="80px">
+                        <span id="name">Room Name</span>
+                    </label>
+                </div>
+                <div id="room_2" class="room_item">
+                    <input id="room2" type="radio" name="room_radio" class="room_radio">
+                    <label for="room2" class="room">
+                        <img src="/img/neo.png" height="80px">
+                        <span id="name">Another Room</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="view">
+                <div class="messages">
+
+                </div>
+                <div class="input">
+                    <!--<input type="text" placeholder="Write a message...">-->
+                    <textarea id="text" rows="1" placeholder="Write a message..." spellcheck="false"></textarea>
+                    <button type="submit">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <script src="/js/jquery.js"></script>
+        <script src="/js/main.js"></script>
+    </body>
+<html>
