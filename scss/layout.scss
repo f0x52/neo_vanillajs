@@ -62,40 +62,96 @@ html, body {
         width: 69.8vw;
         height: 100vh;
         float: right;
-        display: inline-block;
         display: flex;
         min-height: 100vh;
         flex-direction: column;
 
         .messages {
             flex: 1;
+            overflow-x: hidden;
+            overflow-y: auto;
             .room_messages {
                 display: none;
                 height: 100%;
+
+                .message {
+                    clear: both;
+                    margin: 5px;
+                    padding: 8px;
+                    position: relative;
+                    display: inline-flex;
+                    min-width: 110px;
+                    max-width: 60%;
+                    border-radius: 4px;
+                    img {
+                        height: 60px;
+                        vertical-align: top;
+                        margin: 5px;
+                    }
+
+                    div {
+                        margin: 5px;
+                        display: inline-block;
+                        margin-bottom: 20px;
+                    }
+
+                    p {
+                        margin: 0;
+                        display: block;
+                    }
+
+                    .timestamp {
+                        position: absolute;
+                        right: 7px;
+                        bottom: 7px;
+                    }
+                }
+            }
+        }
+
+        .split {
+            .in {
+                float: left;
+            }
+
+            .out {
+                float: right;
+                img, b, br {
+                    display: none;
+                }
             }
         }
 
         .input {
             padding: 12px;
-            display: flex;
-            flex-direction: row;
+            position: relative;
+            #file {
+                cursor: pointer;
+                height: 30px;
+                position: absolute;
+                bottom: 6px;
+                left: 6px;
+            }
 
             textarea {
+                width: calc(100% - 72px);
+                margin-left: 36px;
                 border: none;
                 background: transparent;
-                margin-right: 12px;
-                flex: 1;
 
                 resize: none;
                 overflow: hidden;
                 overflow-y: auto;
                 outline: none;
-                max-height: 100px;
+                max-height: 150px;
             }
 
-            button {
-                border: none;
-                padding: 8px;
+            #send {
+                cursor: pointer;
+                height: 30px;
+                position: absolute;
+                bottom: 6px;
+                right: 6px;
             }
         }
     }

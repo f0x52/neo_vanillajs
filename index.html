@@ -36,17 +36,62 @@
                 </div>
             </div>
             <div class="view">
-                <div class="messages">
+                <div class="messages _split"> <!-- remove the _ to split -->
                     <div class="room_messages" id="messages_1">
-                        <span>Room 1</span>
+                        <span>Room 1</span><br>
+                        <div class="line">
+                            <div class="message out" id="event_id_1">
+                                <img src="/img/neo.png">
+                                <div>
+                                    <b>f0x</b><br>
+                                    <p>look it's a message!</p>
+                                    <p>look it's a message!</p>
+                                    <p>look it's a message!</p>
+                                </div>
+                                <span class="timestamp">13:49</span>
+                            </div>
+                        </div>
+                        <div class="line">
+                            <div class="message in" id="event_id_1">
+                                <img src="/img/neo.png">
+                                <div>
+                                    <b>totally a different person</b><br>
+                                    <p>hi yes im someone else!</p>
+                                </div>
+                                <span class="timestamp">14:01</span>
+                            </div>
+                        </div>
+                        <div class="line">
+                            <div class="message in" id="event_id_1">
+                                <img src="/img/neo.png">
+                                <div>
+                                    <b>wow</b><br>
+                                    <p>im from the future</p>
+                                </div>
+                                <span class="timestamp">20:00</span>
+                            </div>
+                        </div>
+                        <div class="line">
+                            <div class="message out" id="event_id_1">
+                                <img src="/img/neo.png">
+                                <div>
+                                    <b>f0x</b><br>
+                                    <p>no fooling me!</p>
+                                </div>
+                                <span class="timestamp">20:02</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="room_messages" id="messages_2">
                         <span>Room 2</span>
                     </div>
                 </div>
                 <div class="input">
+                    <img src="/img/dark/file.svg" id="file" class="dark">
+                    <img src="/img/light/file.svg" id="file" class="light">
                     <textarea id="text" rows="1" placeholder="Write a message..." spellcheck="false"></textarea>
-                    <button type="submit">Send</button>
+                    <img src="/img/dark/send.svg" id="send" class="dark">
+                    <img src="/img/light/send.svg" id="send" class="light">
                 </div>
             </div>
         </div>

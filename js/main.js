@@ -1,5 +1,5 @@
-hide(document.getElementsByClassName("login")[0]);
-show(document.getElementsByClassName("main")[0]);
+//hide(document.getElementsByClassName("login")[0]);
+//show(document.getElementsByClassName("main")[0]);
 var prev = 0;
 var observe;
 var roomid = document.querySelector('input[name="room_radio"]:checked').value
@@ -23,7 +23,8 @@ function login(e) {
 
     text.focus();
     text.select();
-    resize();
+    resize_textarea();
+    window.setTimeout(bump_room2, 4000)
 }
 
 function resize_textarea() {
@@ -31,7 +32,7 @@ function resize_textarea() {
     text.style.height = text.scrollHeight+'px';
 }
 function resize_textarea_delayed () {
-    window.setTimeout(resize_textarea, 0);
+    window.setTimeout(resize_textarea, 5);
 }
 
 function start() {
@@ -69,4 +70,3 @@ function bump_room2() {
 }
 
 start()
-window.setTimeout(bump_room2, 4000)

@@ -1,9 +1,14 @@
 $fg: #dedede;
 $bg: #1d1f21;
 
+.light {
+    display: none;
+}
+
 html {
     background-color: $bg;
     color: $fg;
+    font-family: sans-serif;
 }
 
 .main {
@@ -20,17 +25,28 @@ html {
     .view {
         color: lighten($fg, 90);
         background-color: lighten($bg, 10);
+        .messages {
+            .room_messages {
+                .message {
+                    .timestamp {
+                        color: darken($fg, 45);
+                    }
+                }
+                .in {
+                    background-color: lighten($bg, 4);
+                }
+
+                .out {
+                    background-color: lighten($bg, 1);
+                }
+
+            }
+        }
 
         .input {
             background-color: lighten($bg, 5);
-
-            input {
+            textarea {
                 color: lighten($fg, 5);
-            }
-
-            button {
-                color: $fg;
-                background-color: lighten($bg, 16);
             }
         }
     }
