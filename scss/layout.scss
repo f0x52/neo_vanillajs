@@ -68,8 +68,11 @@ html, body {
         flex-direction: column;
 
         .messages {
-            height: vh;
             flex: 1;
+            .room_messages {
+                display: none;
+                height: 100%;
+            }
         }
 
         .input {
