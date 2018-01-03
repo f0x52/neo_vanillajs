@@ -7,6 +7,11 @@
         <link href="/css/layout.css" rel="stylesheet" type="text/css">
     </head>
     <body>
+        <div class="orbit-spinner" id="loading">
+            <div class="orbit"></div>
+            <div class="orbit"></div>
+            <div class="orbit"></div>
+        </div>
         <div class="login">
             <center>
                 <img id="header" src="/img/neo_full.png">
@@ -41,6 +46,26 @@
 
         <div id="prototypes" style="display: none;">
 
+            <div class="room_item">
+                <input type="radio" class="room_radio">
+                <label class="room">
+                    <img height="70px" width="70px">
+                    <span id="name"></span>
+                </label>
+            </div>
+
+           <div class="line">
+               <div class="message" id="event_id">
+                   <img>
+                   <div>
+                       <b></b><br>
+                       <p></p>
+                   </div>
+                   <span class="timestamp"></span>
+               </div>
+           </div>
+
+           <!--
             <div id="room_%id%" class="room_item">
                 <input id="%id%_radio" type="radio" name="%room_radio%" class="room_radio" value="%id%">
                 <label for="%id%_radio" class="room" id="%id%">
@@ -59,6 +84,7 @@
                    <span class="timestamp">%time%</span>
                </div>
            </div>
+           -->
 
         </div>
         <script src="/js/main.js"></script>
