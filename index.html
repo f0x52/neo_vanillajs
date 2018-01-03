@@ -20,72 +20,13 @@
 
         <div class="main" style="display: none">
             <div class="list no-select" id="list">
-                <!--<div id="room_1" class="room_item">
-                    <input id="room1_radio" type="radio" name="room_radio" class="room_radio" checked="checked" value="1">
-                    <label for="room1_radio" class="room" id="room1">
-                        <img src="/img/neo.png" height="80px">
-                        <span id="name">Room Name</span>
-                    </label>
-                </div>
-                <div id="room_2" class="room_item">
-                    <input id="room2_radio" type="radio" name="room_radio" class="room_radio" value="2">
-                    <label for="room2_radio" class="room">
-                        <img src="/img/neo.png" height="80px">
-                        <span id="name">Another Room</span>
-                    </label>
-                </div>-->
+
             </div>
             <div class="view">
                 <div class="messages _split" id="message_window"> <!-- remove the _ to split -->
-                    <div class="room_messages" id="messages_1">
-                        <span>Room 1</span><br>
-                        <div class="line">
-                            <div class="message out" id="event_id_1">
-                                <img src="/img/neo.png">
-                                <div>
-                                    <b>f0x</b><br>
-                                    <p>look it's a message!</p>
-                                    <p>look it's a message!</p>
-                                    <p>look it's a message!</p>
-                                </div>
-                                <span class="timestamp">13:49</span>
-                            </div>
-                        </div>
-                        <div class="line">
-                            <div class="message in" id="event_id_1">
-                                <img src="/img/neo.png">
-                                <div>
-                                    <b>totally a different person</b><br>
-                                    <p>hi yes im someone else!</p>
-                                </div>
-                                <span class="timestamp">14:01</span>
-                            </div>
-                        </div>
-                        <div class="line">
-                            <div class="message in" id="event_id_1">
-                                <img src="/img/neo.png">
-                                <div>
-                                    <b>wow</b><br>
-                                    <p>im from the future</p>
-                                </div>
-                                <span class="timestamp">20:00</span>
-                            </div>
-                        </div>
-                        <div class="line">
-                            <div class="message out" id="event_id_1">
-                                <img src="/img/neo.png">
-                                <div>
-                                    <b>f0x</b><br>
-                                    <p>no fooling me!</p>
-                                </div>
-                                <span class="timestamp">20:02</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="room_messages" id="messages_2">
-                        <span>Room 2</span>
-                    </div>
+
                 </div>
+
                 <div class="input">
                     <label for="">
                         <img src="/img/dark/file.svg" id="file" class="dark">
@@ -99,6 +40,7 @@
         </div>
 
         <div id="prototypes" style="display: none;">
+
             <div id="room_%id%" class="room_item">
                 <input id="%id%_radio" type="radio" name="%room_radio%" class="room_radio" value="%id%">
                 <label for="%id%_radio" class="room" id="%id%">
@@ -106,6 +48,17 @@
                     <span id="name">%name%</span>
                 </label>
             </div>
+
+           <div class="line">
+               <div class="message %dir%" id="%event_id%">
+                   <img src="%img%">
+                   <div>
+                       <b>%name%</b><br>
+                       <p>%text%</p>
+                   </div>
+                   <span class="timestamp">%time%</span>
+               </div>
+           </div>
 
         </div>
         <script src="/js/main.js"></script>

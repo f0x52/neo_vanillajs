@@ -58,24 +58,26 @@ function start() {
     observe(text, 'keydown', resize_textarea_delayed)
     observe(document.getElementById('login'), 'submit', login)
     observe(document.getElementById('list'), 'change', roomSwitch)
+    observe(document.getElementById('send'), 'click', send)
 
     roomSwitch()
     console.log("Neo 0.01")
 
-    new_room("room1", "/img/neo_full.png", "some room")
-    new_room("room2", "/img/neo_full.png", "another one")
-    new_room("room3", "/img/neo.png", "one more")
-    new_room("room5", "/img/dark/file.svg", "cuts of long text seeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-    new_room("room6", "/img/dark/send.svg", "auto")
-    new_room("room7", "/img/dark/send.svg", "scroll")
-    new_room("room8", "/img/dark/send.svg", "bar")
-    new_room("room9", "/img/dark/send.svg", "as")
-    new_room("room10", "/img/dark/send.svg", "well")
-    new_room("room11", "/img/dark/send.svg", "well")
-    new_room("room12", "/img/dark/send.svg", "well")
-    new_room("room13", "/img/dark/send.svg", "well")
-    new_room("room14", "/img/dark/send.svg", "well")
-    new_room("room15", "/img/dark/send.svg", "well")
+    new_room("room1", "/img/neo_full.png", "new messages soon(tm)")
+    new_room("room2", "/img/neo_full.png", "a room")
+
+    new_message("room2", "/img/light/file.svg", "f0x", "look I sent a message", "000", "out", "18:53")
+    new_message("room2", "/img/neo_full.png", "someone else", "me tooooo", "000", "in", "19:00")
+
+    window.setTimeout(function() {new_message("room1", "/img/neo.png", "f0x", "messages can be received at any time woo threading is easy here", "000", "out", "20:00")}, 3000);
+}
+
+function send() {
+    textfield = document.getElementById("text")
+    if(textfield.value != "") {
+        new_message(roomid, "/img/neo.png", "you", document.getElementById("text").value, "000", "out", "19:00")
+        textfield.value = ""
+    }
 }
 
 function roomSwitch() {
@@ -112,7 +114,7 @@ function new_room(id, img, name) {
     room_element.innerHTML = html
 
     var div = document.createElement('div')
-    div.class="room_messages"
+    div.classList.add("room_messages")
     div.id="messages_" + id
 
     var span = document.createElement('span')
@@ -122,6 +124,29 @@ function new_room(id, img, name) {
     document.getElementById("message_window").append(div)
     document.getElementById("list").append(room_element)
     //bump_room(id)
+}
+
+function new_message(id, img, name, text, event_id, dir, time) {
+    // REEE BETTER WATCH OUT FOR XSS
+    var prototype = document.getElementById("prototypes").getElementsByClassName("line")[0]
+    var message = prototype.cloneNode(true)
+
+    var html = message.innerHTML
+    text = text.replace(/%/g, "%%")
+    name = name.replace(/%/g, "%%")
+    img = img.replace(/%/g, "%%")
+
+    html = html.replace(/%dir%/g, dir)
+    html = html.replace(/%event_id%/g, event_id)
+    html = html.replace(/%img%/g, img)
+    html = html.replace(/%name%/g, name)
+    html = html.replace(/%text%/g, text)
+    html = html.replace(/%time%/g, time)
+    html = html.replace(/%%/g, "%")
+    message.innerHTML = html
+
+    document.getElementById("messages_"+id).append(message)
+    bump_room(id)
 }
 
 start()
