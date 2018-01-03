@@ -39,21 +39,26 @@ html, body {
         }
 
         label {
-            height: 100px;
+            height: 70px;
             width: 100%;
             cursor: pointer;
             display: block;
+            padding: 10px;
+            position: relative;
 
             img {
-                margin: 10px;
-                vertical-align: top;
+                object-fit: cover;
+                position: absolute;
+                left: 10px;
+                top: 10px;
             }
 
             #name {
                 font-size: 140%;
                 font-weight: bold;
-                margin-top: 10px;
-                display: inline-block;
+                padding: 10px;
+                padding-left: 80px;
+                white-space: nowrap;
             }
         }
     }

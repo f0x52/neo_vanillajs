@@ -20,7 +20,7 @@
 
         <div class="main" style="display: none">
             <div class="list no-select" id="list">
-                <div id="room_1" class="room_item">
+                <!--<div id="room_1" class="room_item">
                     <input id="room1_radio" type="radio" name="room_radio" class="room_radio" checked="checked" value="1">
                     <label for="room1_radio" class="room" id="room1">
                         <img src="/img/neo.png" height="80px">
@@ -33,10 +33,10 @@
                         <img src="/img/neo.png" height="80px">
                         <span id="name">Another Room</span>
                     </label>
-                </div>
+                </div>-->
             </div>
             <div class="view">
-                <div class="messages _split"> <!-- remove the _ to split -->
+                <div class="messages _split" id="message_window"> <!-- remove the _ to split -->
                     <div class="room_messages" id="messages_1">
                         <span>Room 1</span><br>
                         <div class="line">
@@ -87,8 +87,10 @@
                     </div>
                 </div>
                 <div class="input">
-                    <img src="/img/dark/file.svg" id="file" class="dark">
-                    <img src="/img/light/file.svg" id="file" class="light">
+                    <label for="">
+                        <img src="/img/dark/file.svg" id="file" class="dark">
+                        <img src="/img/light/file.svg" id="file" class="light">
+                    </label>
                     <textarea id="text" rows="1" placeholder="Write a message..." spellcheck="false"></textarea>
                     <img src="/img/dark/send.svg" id="send" class="dark">
                     <img src="/img/light/send.svg" id="send" class="light">
@@ -96,6 +98,16 @@
             </div>
         </div>
 
+        <div id="prototypes" style="display: none;">
+            <div id="room_%id%" class="room_item">
+                <input id="%id%_radio" type="radio" name="%room_radio%" class="room_radio" value="%id%">
+                <label for="%id%_radio" class="room" id="%id%">
+                    <img src="%img%" height="70px" width="70px">
+                    <span id="name">%name%</span>
+                </label>
+            </div>
+
+        </div>
         <script src="/js/main.js"></script>
     </body>
 </html>
