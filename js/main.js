@@ -138,7 +138,6 @@ function sync() {
                         }
                     }
 
-
                     hide(document.getElementById("loading"))
                     if(!resumed) {
                         resume()
@@ -202,6 +201,8 @@ function start() {
         user = localStorage.getItem("user")
         console.log("read token from localstorage: " + token)
         hide(document.getElementById("login"))
+        document.getElementById("loading").style.top = "50%";
+        document.getElementById("loading").style.marginTop = "-45px";
         show(document.getElementById("loading"))
         sync()
     }
@@ -225,7 +226,7 @@ function send() {
         msg = textfield.value.replace(/^\s+|\s+$/g, '')
         unixtime = Date.now()
 
-        xmlhttp = new XMLHttpRequest()
+        var xmlhttp = new XMLHttpRequest()
         var url = homeserver+"/_matrix/client/r0/rooms/" + roomid + "/send/m.room.message/" + unixtime + "?access_token=" + token
         xmlhttp.open("PUT", url, true)
         xmlhttp.setRequestHeader("Content-type", "application/json")
@@ -314,6 +315,8 @@ function new_message(id, img, name, text, event_id, dir, time) {
 
 
     document.getElementById("messages_"+id).append(message)
+    msg_window = document.getElementById("message_window")
+    msg_window.scrollTop = msg_window.scrollHeight;
     bump_room(id)
 }
 
