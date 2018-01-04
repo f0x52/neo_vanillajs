@@ -7,6 +7,7 @@ var checked = document.querySelector('input[name="room_radio"]:checked')
 var homeserver = "https://matrix.org"
 var user, token, next_batch
 var rooms = []
+var resumed = false
 
 if(checked != null) {
     roomid = checked.value
@@ -79,6 +80,7 @@ function resume() {
     text.focus()
     text.select()
     resize_textarea()
+    resumed=true
 }
 
 function sync() {
@@ -138,7 +140,9 @@ function sync() {
 
 
                     hide(document.getElementById("loading"))
-                    resume()
+                    if(!resumed) {
+                        resume()
+                    }
                     sync()
                 } else {
                     //something went wrong
@@ -219,8 +223,29 @@ function send() {
     textfield = document.getElementById("text")
     if(textfield.value != "") {
         msg = textfield.value.replace(/^\s+|\s+$/g, '')
-        new_message(roomid, "/img/neo.png", "you", msg, "000", "out", "19:00")
-        textfield.value = ""
+        unixtime = Date.now()
+
+        xmlhttp = new XMLHttpRequest()
+        var url = homeserver+"/_matrix/client/r0/rooms/" + roomid + "/send/m.room.message/" + unixtime + "?access_token=" + token
+        xmlhttp.open("PUT", url, true)
+        xmlhttp.setRequestHeader("Content-type", "application/json")
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 ) {
+                if(xmlhttp.status === 200) {
+                    textfield.value = ""
+                } else {
+                    //something went wrong
+                    console.log(xmlhttp.responseText)
+                    console.log("fatal error sending")
+                }
+            }
+        }
+        var body = {
+            "msgtype": "m.text",
+            "body": msg,
+        }
+        xmlhttp.send(JSON.stringify(body))
+
     }
     resize_textarea()
 }
