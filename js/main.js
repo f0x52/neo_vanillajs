@@ -57,7 +57,7 @@ function login_success(data) {
         localStorage.setItem('token', json.access_token)
         localStorage.setItem('user', user)
         localStorage.setItem('homeserver', homeserver)
-        resume()
+        sync()
     } else {
         //something went wrong
         console.log("fatal error")
@@ -76,12 +76,9 @@ function resume() {
     document.getElementById("loading").style.left = "auto";
     document.getElementById("loading").style.marginLeft = 0;
 
-
-
     text.focus()
     text.select()
     resize_textarea()
-    sync()
 }
 
 function sync() {
@@ -141,10 +138,12 @@ function sync() {
 
 
                     hide(document.getElementById("loading"))
-                    sync();
+                    resume()
+                    sync()
                 } else {
                     //something went wrong
                     console.log("code: " + xmlhttp.status)
+                    sync()
                 }
             }
         }
@@ -156,7 +155,7 @@ function sync() {
 function wget(url) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open( "GET", url + "?access_token=" + token, false );
-    xmlhttp.send( null );
+    xmlhttp.send(null);
     return xmlhttp.responseText;
 }
 
@@ -198,7 +197,9 @@ function start() {
         homserver = localStorage.getItem("homserver")
         user = localStorage.getItem("user")
         console.log("read token from localstorage: " + token)
-        resume()
+        hide(document.getElementById("login"))
+        show(document.getElementById("loading"))
+        sync()
     }
 
     //new_room("room2", "/img/neo_full.png", "a room")
