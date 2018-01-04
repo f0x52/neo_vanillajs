@@ -109,7 +109,6 @@ function sync() {
 
                             img = JSON.parse(wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.avatar"))
                             url = "/img/blank.jpg";
-                            console.log(img)
                             if(img != undefined) {
                                 if(img.errcode == undefined) {
                                     url = homeserver + "/_matrix/media/r0/download/" + img.url.substring(6)
@@ -118,14 +117,34 @@ function sync() {
                             new_room(key, url, name)
                             rooms.push(key)
                         }
+
+                        for(var event_num in json.rooms.join[key].timeline.events) {
+                            event = json.rooms.join[key].timeline.events[event_num]
+                            if(event.type == "m.room.message") {
+                            name = JSON.parse(wget(homeserver + "/_matrix/client/r0/profile/" + event.sender + "/displayname")).displayname
+                            if(name == undefined) {
+                                name = event.sender
+                            }
+
+                            img = JSON.parse(wget(homeserver + "/_matrix/client/r0/profile/" + event.sender + "/avatar_url"))
+                            url = "/img/blank.jpg";
+                            if(img != undefined) {
+                                if(img.errcode == undefined && img.avatar_url != undefined) {
+                                    url = homeserver + "/_matrix/media/r0/download/" + img.avatar_url.substring(6)
+                                }
+                            }
+
+                                new_message(key, url, name, event.content.body, event.event_id, "in", " ")
+                            }
+                        }
                     }
+
 
                     hide(document.getElementById("loading"))
                     sync();
                 } else {
                     //something went wrong
                     console.log("code: " + xmlhttp.status)
-                    console.log("url: " + url)
                 }
             }
         }
@@ -184,7 +203,6 @@ function start() {
 
     //new_room("room2", "/img/neo_full.png", "a room")
 
-    //new_message("room2", "/img/light/file.svg", "f0x", "look I sent a message", "000", "out", "18:53")
     //new_message("room2", "/img/neo_full.png", "someone else", "me tooooo", "000", "in", "19:00")
 
     //window.setTimeout(function() {new_message("room1", "/img/neo.png", "f0x", "messages can be received at any time woo threading is easy here", "000", "out", "20:00")}, 3000)
