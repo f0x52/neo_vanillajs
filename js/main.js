@@ -43,7 +43,11 @@ function login(e) {
                 login_success(xmlhttp.responseText)
             } else {
                 //something went wrong
-                console.log("fatal error")
+				error = JSON.parse(xmlhttp.responseText).error
+				if(error != undefined) {
+                    document.getElementById("error").textContent = error
+                    hide(document.getElementById("loading"))
+                }
             }
         }
     }
@@ -66,6 +70,7 @@ function login_success(data) {
         localStorage.setItem('user', user)
         localStorage.setItem('homeserver', homeserver)
         localStorage.setItem('user_info', JSON.stringify(user_info))
+        hide(document.getElementById("login"))
         initial_sync()
     } else {
         //something went wrong
@@ -124,11 +129,6 @@ function initial_sync() {
                         rooms.push(key)
                     }
                 }
-
-                //hide(document.getElementById("loading"))
-                //if(!resumed) {
-                //    resume()
-                //}
                 sync()
             } else {
                 //something went wrong
@@ -143,9 +143,9 @@ function initial_sync() {
 
 function sync() {
     setTimeout(function () {
-        console.log("sync")
+		show(document.getElementById("loading"))
         var xmlhttp = new XMLHttpRequest()
-        var url = homeserver+"/_matrix/client/r0/sync?access_token=" + token
+        var url = homeserver+"/_matrix/client/r0/sync?access_token=" + token + "&timeout=30000"
         if(next_batch != undefined) {
             url+="&since=" + next_batch
         }
@@ -189,7 +189,11 @@ function sync() {
 								if(event.sender == "@" + user + ":" + homeserver.substring(8)) {
 									dir = "out"
 								}
-                                new_message(key, user_info[event.sender].url, user_info[event.sender].name, event.sender, event.content.body, event.event_id, dir, " ", user_info[event.sender].color)
+
+								time = new Date(event.origin_server_ts)
+								time_string = time.getHours() + ":" + time.getMinutes()
+
+                                new_message(key, user_info[event.sender].url, user_info[event.sender].name, event.sender, event.content.body, event.event_id, dir, time_string, user_info[event.sender].color)
                             }
                         }
                     }
@@ -363,8 +367,8 @@ function roomSwitch() {
     checked = document.querySelector('input[name="room_radio"]:checked')
     if(checked != null) {
         if(roomid == checked.value) {
-            msg_window = document.getElementById("message_window")
-            msg_window.scrollTop = msg_window.scrollHeight;
+            msg_window = document.getElementById("messages_" + roomid)
+            msg_window.scrollTo(0, msg_window.scrollHeight)
         }
         roomid = checked.value
     }
