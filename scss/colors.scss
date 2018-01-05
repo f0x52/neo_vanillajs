@@ -6,6 +6,14 @@ $anim_color: #fff;
     display: none;
 }
 
+.red    { color: #cc6666}
+.green  { color: #b5bd68}
+.yellow { color: #f0c674}
+.blue   { color: #81a2be}
+.purple { color: #b294bb}
+.cyan   { color: #8abeb7}
+.grey   { color: #c5c8c6}
+
 html {
     background-color: $bg;
     color: $fg;

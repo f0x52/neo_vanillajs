@@ -5,12 +5,17 @@ var observe
 var roomid
 var checked = document.querySelector('input[name="room_radio"]:checked')
 var homeserver = "https://matrix.org"
-var user, token, next_batch
+var user, token, next_batch, user_info
 var rooms = []
 var resumed = false
+var colors = ["red", "green", "yellow", "blue", "purple", "cyan", "grey"]
 
 if(checked != null) {
     roomid = checked.value
+}
+
+hashCode = function(s){
+      return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
 }
 
 function show(element) {
@@ -27,7 +32,7 @@ function login(e) {
     pass = document.getElementById("pass").value
     console.log("logging in " + user)
 
-    xmlhttp = new XMLHttpRequest()
+    var xmlhttp = new XMLHttpRequest()
     var url = homeserver+"/_matrix/client/r0/login"
     xmlhttp.open("POST", url, true)
     xmlhttp.setRequestHeader("Content-type", "application/json")
@@ -54,11 +59,13 @@ function login(e) {
 
 function login_success(data) {
     json = JSON.parse(data)
+    token = json.access_token
     if(json.access_token) {
         localStorage.setItem('token', json.access_token)
         localStorage.setItem('user', user)
         localStorage.setItem('homeserver', homeserver)
-        sync()
+        localStorage.setItem('user_info', JSON.stringify(user_info))
+        initial_sync()
     } else {
         //something went wrong
         console.log("fatal error")
@@ -83,9 +90,60 @@ function resume() {
     resumed=true
 }
 
+function initial_sync() {
+    var xmlhttp = new XMLHttpRequest()
+    var url = homeserver + "/_matrix/client/r0/joined_rooms?access_token=" + token
+    console.log("initial_sync")
+    xmlhttp.open("GET", url, true)
+    xmlhttp.setRequestHeader("Content-type", "application/json")
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4 ) {
+            if(xmlhttp.status === 200) {
+                json = JSON.parse(xmlhttp.responseText)
+                for(var num in json.joined_rooms) {
+                    var key = json.joined_rooms[num]
+                    if(!rooms.includes(key)) {
+                        wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.name", function (result, key) {
+                            var name = JSON.parse(result).name
+                            if(name == undefined) {
+                                name = key
+                            }
+                            //treat like a pm if the room has just one other person
+                            wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.avatar", function (result) {
+                                var img = JSON.parse(result)
+                                var url = "/img/blank.jpg";
+                                if(img != undefined) {
+                                    if(img.errcode == undefined) {
+                                        url = homeserver + "/_matrix/media/r0/download/" + img.url.substring(6)
+                                    }
+                                }
+                                new_room(key, url, name)
+                            })
+                        }, key)
+                        rooms.push(key)
+                    }
+                }
+
+                //hide(document.getElementById("loading"))
+                //if(!resumed) {
+                //    resume()
+                //}
+                sync()
+            } else {
+                //something went wrong
+                console.log("code: " + xmlhttp.status)
+                sync()
+            }
+        }
+    }
+    xmlhttp.send()
+    show(document.getElementById("loading"))
+}
+
 function sync() {
     setTimeout(function () {
-        xmlhttp = new XMLHttpRequest()
+        console.log("sync")
+        var xmlhttp = new XMLHttpRequest()
         var url = homeserver+"/_matrix/client/r0/sync?access_token=" + token
         if(next_batch != undefined) {
             url+="&since=" + next_batch
@@ -95,45 +153,42 @@ function sync() {
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState == 4 ) {
                 if(xmlhttp.status === 200) {
-                    //console.log(xmlhttp.responseText)
                     json = JSON.parse(xmlhttp.responseText)
                     next_batch = json.next_batch
 
                     for(var key in json.rooms.join) {
                         if(!rooms.includes(key)) {
-                            name = JSON.parse(wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.name")).name
-                            if(name == undefined) {
-                                name = key
-                            }
-
-                            img = JSON.parse(wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.avatar"))
-                            url = "/img/blank.jpg";
-                            if(img != undefined) {
-                                if(img.errcode == undefined) {
-                                    url = homeserver + "/_matrix/media/r0/download/" + img.url.substring(6)
+                            wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.name", function (result) {
+                                var name = JSON.parse(result).name
+                                if(name == undefined) {
+                                    name = key
                                 }
-                            }
-                            new_room(key, url, name)
+
+                                wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.avatar", function (result, key) {
+                                    var img = JSON.parse(result)
+                                    var url = "/img/blank.jpg";
+                                    if(img != undefined) {
+                                        if(img.errcode == undefined) {
+                                            url = homeserver + "/_matrix/media/r0/download/" + img.url.substring(6)
+                                        }
+                                    }
+                                    new_room(key, url, name)
+                                })
+                            }, key)
                             rooms.push(key)
                         }
 
                         for(var event_num in json.rooms.join[key].timeline.events) {
-                            event = json.rooms.join[key].timeline.events[event_num]
+                            var event = json.rooms.join[key].timeline.events[event_num]
                             if(event.type == "m.room.message") {
-                            name = JSON.parse(wget(homeserver + "/_matrix/client/r0/profile/" + event.sender + "/displayname")).displayname
-                            if(name == undefined) {
-                                name = event.sender
-                            }
-
-                            img = JSON.parse(wget(homeserver + "/_matrix/client/r0/profile/" + event.sender + "/avatar_url"))
-                            url = "/img/blank.jpg";
-                            if(img != undefined) {
-                                if(img.errcode == undefined && img.avatar_url != undefined) {
-                                    url = homeserver + "/_matrix/media/r0/download/" + img.avatar_url.substring(6)
+                                if(user_info[event.sender] == undefined || user_info[event.sender].color == undefined) {
+                                    get_user_info(event.sender)
                                 }
-                            }
-
-                                new_message(key, url, name, event.content.body, event.event_id, "in", " ")
+								dir = "in";
+								if(event.sender == user) {
+									dir = "out"
+								}
+                                new_message(key, user_info[event.sender].url, user_info[event.sender].name, event.sender, event.content.body, event.event_id, dir, " ", user_info[event.sender].color)
                             }
                         }
                     }
@@ -152,14 +207,61 @@ function sync() {
         }
         xmlhttp.send()
         show(document.getElementById("loading"))
-    }, 1000);
+    }, 3000);
 }
 
-function wget(url) {
+function get_user_info(user_id) {
+    user_info[user_id] = {name:user_id, url: "/img/blank.jpg", color: colors[Math.abs(hashCode(user_id))%6]}
+    wget(homeserver + "/_matrix/client/r0/profile/" + user_id + "/displayname", function (result, user_id) {
+        var name = JSON.parse(result).displayname
+        if(name != undefined) {
+            user_info[user_id].name = name
+        } else {
+            user_info[user_id].name = user_id
+        }
+
+        var user_messages = document.getElementsByClassName(user_id)
+        for(var i=0; i < user_messages.length; i++) {
+            user_messages[i].getElementsByTagName("b")[0].textContent = user_info[user_id].name
+        }
+        localStorage.setItem('user_info', JSON.stringify(user_info))
+
+        wget(homeserver + "/_matrix/client/r0/profile/" + user_id + "/avatar_url", function (result, user_id) {
+            var img = JSON.parse(result)
+            if(img != undefined) {
+                if(img.errcode == undefined && img.avatar_url != undefined) {
+                    var url = homeserver + "/_matrix/media/r0/download/" + img.avatar_url.substring(6)
+                    user_info[user_id].url = url
+
+                    var user_messages = document.getElementsByClassName(user_id)
+                    for(var i=0; i < user_messages.length; i++) {
+                        user_messages[i].getElementsByTagName("img")[0].src = user_info[user_id].url
+                    }
+                    localStorage.setItem('user_info', JSON.stringify(user_info))
+                }
+            }
+        }, user_id)
+    }, user_id)
+
+}
+
+function wget(url, done_func, key, event) {
     var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open( "GET", url + "?access_token=" + token, false );
+    xmlhttp.open( "GET", url + "?access_token=" + token, true);
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4 ) {
+            if(key != undefined) {
+                if(event != undefined) {
+                    done_func(xmlhttp.responseText, key, event)
+                } else {
+                    done_func(xmlhttp.responseText, key)
+                }
+            } else {
+                done_func(xmlhttp.responseText)
+            }
+        }
+    }
     xmlhttp.send(null);
-    return xmlhttp.responseText;
 }
 
 function resize_textarea() {
@@ -190,6 +292,7 @@ function start() {
     observe(text, 'keyup', shift_enter)
     observe(document.getElementById('login'), 'submit', login)
     observe(document.getElementById('list'), 'change', roomSwitch)
+    observe(document.getElementById('list'), 'click', roomSwitch)
     observe(document.getElementById('send'), 'click', send)
 
     roomSwitch()
@@ -199,12 +302,19 @@ function start() {
         token = localStorage.getItem("token")
         homserver = localStorage.getItem("homserver")
         user = localStorage.getItem("user")
+        user_info = JSON.parse(localStorage.getItem('user_info'))
+        if(user_info == undefined) {
+            console.log("reset user_info")
+            user_info = {}
+        }
+
         console.log("read token from localstorage: " + token)
         hide(document.getElementById("login"))
         document.getElementById("loading").style.top = "50%";
         document.getElementById("loading").style.marginTop = "-45px";
         show(document.getElementById("loading"))
-        sync()
+        console.log("start")
+        initial_sync()
     }
 
     //new_room("room2", "/img/neo_full.png", "a room")
@@ -246,7 +356,6 @@ function send() {
             "body": msg,
         }
         xmlhttp.send(JSON.stringify(body))
-
     }
     resize_textarea()
 }
@@ -258,6 +367,10 @@ function roomSwitch() {
     }
     checked = document.querySelector('input[name="room_radio"]:checked')
     if(checked != null) {
+        if(roomid == checked.value) {
+            msg_window = document.getElementById("message_window")
+            msg_window.scrollTop = msg_window.scrollHeight;
+        }
         roomid = checked.value
     }
     new_view = document.getElementById("messages_" + roomid)
@@ -299,20 +412,25 @@ function new_room(id, img, name) {
     //bump_room(id)
 }
 
-function new_message(id, img, name, text, event_id, dir, time) {
+function new_message(id, img, name, user_id, text, event_id, dir, time, color, unsent) {
     var prototype = document.getElementById("prototypes").getElementsByClassName("line")[0]
     var message = prototype.cloneNode(true)
 
     message.getElementsByClassName("message")[0].id = event_id
-    document.getElementsByClassName("message")[0].classList.add(dir)
+    message.getElementsByClassName("message")[0].classList.add(dir)
+    message.getElementsByClassName("message")[0].classList.add(user_id)
+    if(unsent != undefined) {
+        message.getElementsByClassName("message")[0].classList.add("unsent")
+    }
 
     message.getElementsByTagName("img")[0].src = img
 
     message.getElementsByTagName("b")[0].textContent = name
+
+    message.getElementsByTagName("b")[0].classList.add(color)
     message.getElementsByTagName("p")[0].textContent = text
     message.getElementsByTagName("p")[0].innerHTML = message.getElementsByTagName("p")[0].innerHTML.replace(/\n/g, "<br>")
     message.getElementsByClassName("timestamp")[0].textContent = time
-
 
     document.getElementById("messages_"+id).append(message)
     msg_window = document.getElementById("message_window")
