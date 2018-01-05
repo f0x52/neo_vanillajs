@@ -185,7 +185,7 @@ function sync() {
                                     get_user_info(event.sender)
                                 }
 								dir = "in";
-								if(event.sender == user) {
+								if(event.sender == "@" + user + ":" + homeserver.substring(8)) {
 									dir = "out"
 								}
                                 new_message(key, user_info[event.sender].url, user_info[event.sender].name, event.sender, event.content.body, event.event_id, dir, " ", user_info[event.sender].color)
