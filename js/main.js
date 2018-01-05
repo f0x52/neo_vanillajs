@@ -61,6 +61,7 @@ function login_success(data) {
     json = JSON.parse(data)
     token = json.access_token
     if(json.access_token) {
+		user_info = {}
         localStorage.setItem('token', json.access_token)
         localStorage.setItem('user', user)
         localStorage.setItem('homeserver', homeserver)
@@ -316,12 +317,6 @@ function start() {
         console.log("start")
         initial_sync()
     }
-
-    //new_room("room2", "/img/neo_full.png", "a room")
-
-    //new_message("room2", "/img/neo_full.png", "someone else", "me tooooo", "000", "in", "19:00")
-
-    //window.setTimeout(function() {new_message("room1", "/img/neo.png", "f0x", "messages can be received at any time woo threading is easy here", "000", "out", "20:00")}, 3000)
 }
 
 function shift_enter(event) {
