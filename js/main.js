@@ -89,6 +89,7 @@ function resume() {
     document.getElementById("loading").style.right = "5px";
     document.getElementById("loading").style.left = "auto";
     document.getElementById("loading").style.marginLeft = 0;
+    document.getElementById("loading").style.marginTop = "0";
 
     text.focus()
     text.select()
@@ -144,6 +145,7 @@ function initial_sync() {
 function sync() {
     setTimeout(function () {
 		show(document.getElementById("loading"))
+        console.log("sync")
         var xmlhttp = new XMLHttpRequest()
         var url = homeserver+"/_matrix/client/r0/sync?access_token=" + token + "&timeout=30000"
         if(next_batch != undefined) {
@@ -333,6 +335,7 @@ function send() {
     textfield = document.getElementById("text")
     if(textfield.value != "") {
         msg = textfield.value.replace(/^\s+|\s+$/g, '')
+        textfield.value = ""
         unixtime = Date.now()
 
         var xmlhttp = new XMLHttpRequest()
@@ -342,7 +345,6 @@ function send() {
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState == 4 ) {
                 if(xmlhttp.status === 200) {
-                    textfield.value = ""
                 } else {
                     //something went wrong
                     console.log(xmlhttp.responseText)
@@ -356,7 +358,7 @@ function send() {
         }
         xmlhttp.send(JSON.stringify(body))
     }
-    resize_textarea()
+    resize_textarea_delayed()
 }
 
 function roomSwitch() {
@@ -367,8 +369,10 @@ function roomSwitch() {
     checked = document.querySelector('input[name="room_radio"]:checked')
     if(checked != null) {
         if(roomid == checked.value) {
-            msg_window = document.getElementById("messages_" + roomid)
-            msg_window.scrollTo(0, msg_window.scrollHeight)
+            console.log("trying to scroll?")
+            msg_window = document.getElementById("message_window")
+            console.log(msg_window)
+            msg_window.scrollTop = 999999999999999
         }
         roomid = checked.value
     }
