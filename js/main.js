@@ -43,8 +43,8 @@ function login(e) {
                 login_success(xmlhttp.responseText)
             } else {
                 //something went wrong
-				error = JSON.parse(xmlhttp.responseText).error
-				if(error != undefined) {
+                error = JSON.parse(xmlhttp.responseText).error
+                if(error != undefined) {
                     document.getElementById("error").textContent = error
                     hide(document.getElementById("loading"))
                 }
@@ -65,7 +65,7 @@ function login_success(data) {
     json = JSON.parse(data)
     token = json.access_token
     if(json.access_token) {
-		user_info = {}
+        user_info = {}
         localStorage.setItem('token', json.access_token)
         localStorage.setItem('user', user)
         localStorage.setItem('homeserver', homeserver)
@@ -78,7 +78,7 @@ function login_success(data) {
     }
 }
 
-function resume() {
+function resume(json) {
     hide(document.getElementById("loading"))
     hide(document.getElementsByClassName("login")[0])
     show(document.getElementsByClassName("main")[0])
@@ -89,12 +89,16 @@ function resume() {
     document.getElementById("loading").style.right = "5px";
     document.getElementById("loading").style.left = "auto";
     document.getElementById("loading").style.marginLeft = 0;
+    document.getElementById("loading").style.marginRight = "10px";
     document.getElementById("loading").style.marginTop = "0";
 
     text.focus()
     text.select()
     resize_textarea()
     resumed=true
+    for(var key in json) {
+        room_backlog(key, 100, json[key].timeline.prev_batch)
+    }
 }
 
 function initial_sync() {
@@ -128,6 +132,7 @@ function initial_sync() {
                             })
                         }, key)
                         rooms.push(key)
+                        sort_roomlist()
                     }
                 }
                 sync()
@@ -144,7 +149,7 @@ function initial_sync() {
 
 function sync() {
     setTimeout(function () {
-		show(document.getElementById("loading"))
+        show(document.getElementById("loading"))
         console.log("sync")
         var xmlhttp = new XMLHttpRequest()
         var url = homeserver+"/_matrix/client/r0/sync?access_token=" + token + "&timeout=30000"
@@ -158,52 +163,12 @@ function sync() {
                 if(xmlhttp.status === 200) {
                     json = JSON.parse(xmlhttp.responseText)
                     next_batch = json.next_batch
-
-                    for(var key in json.rooms.join) {
-                        if(!rooms.includes(key)) {
-                            wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.name", function (result) {
-                                var name = JSON.parse(result).name
-                                if(name == undefined) {
-                                    name = key
-                                }
-
-                                wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.avatar", function (result, key) {
-                                    var img = JSON.parse(result)
-                                    var url = "/img/blank.jpg";
-                                    if(img != undefined) {
-                                        if(img.errcode == undefined) {
-                                            url = homeserver + "/_matrix/media/r0/download/" + img.url.substring(6)
-                                        }
-                                    }
-                                    new_room(key, url, name)
-                                })
-                            }, key)
-                            rooms.push(key)
-                        }
-
-                        for(var event_num in json.rooms.join[key].timeline.events) {
-                            var event = json.rooms.join[key].timeline.events[event_num]
-                            if(event.type == "m.room.message") {
-                                if(user_info[event.sender] == undefined || user_info[event.sender].color == undefined) {
-                                    get_user_info(event.sender)
-                                }
-								dir = "in";
-								if(event.sender == "@" + user + ":" + homeserver.substring(8)) {
-									dir = "out"
-								}
-
-								time = new Date(event.origin_server_ts)
-								time_string = time.getHours() + ":" + time.getMinutes()
-
-                                new_message(key, user_info[event.sender].url, user_info[event.sender].name, event.sender, event.content.body, event.event_id, dir, time_string, user_info[event.sender].color)
-                            }
-                        }
-                    }
-
+                    process_sync(json)
                     hide(document.getElementById("loading"))
                     if(!resumed) {
-                        resume()
+                        resume(json.rooms.join)
                     }
+                    sort_roomlist()
                     sync()
                 } else {
                     //something went wrong
@@ -215,6 +180,89 @@ function sync() {
         xmlhttp.send()
         show(document.getElementById("loading"))
     }, 3000);
+}
+
+function room_backlog(room, num, from) {
+    show(document.getElementById("loading"))
+    console.log("room backlog")
+    var xmlhttp = new XMLHttpRequest()
+    var url = homeserver+"/_matrix/client/r0/rooms/" + room + "/messages?access_token=" + token + "&from=" + from + "&limit=" + num + '&filter={"types": "m.room.message"}'
+    xmlhttp.open("GET", url, true)
+    xmlhttp.setRequestHeader("Content-type", "application/json")
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4 ) {
+            if(xmlhttp.status === 200) {
+                json = JSON.parse(xmlhttp.responseText)
+                for(var event_num in json.chunk) {
+                    var event = json.chunk[event_num]
+                    if(event.type == "m.room.message") {
+                        if(user_info[event.sender] == undefined || user_info[event.sender].color == undefined) {
+                            get_user_info(event.sender)
+                        }
+                        dir = "in";
+                        if(event.sender == "@" + user + ":" + homeserver.substring(8)) {
+                            dir = "out"
+                        }
+
+                        time = new Date(event.origin_server_ts)
+                        time_string = time.getHours() + ":" + time.getMinutes()
+                        new_message(room, user_info[event.sender].url, user_info[event.sender].name, event.sender, event.content.body, event.event_id, dir, time_string, user_info[event.sender].color)
+                    }
+                }
+                hide(document.getElementById("loading"))
+                if(!resumed) {
+                    resume()
+                }
+                sync()
+            } else {
+                //something went wrong
+                console.log("code: " + xmlhttp.status)
+                sync()
+            }
+        }
+    }
+    xmlhttp.send()
+}
+
+function process_sync(json) {
+    for(var key in json.rooms.join) {
+        if(!rooms.includes(key)) {
+            wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.name", function (result) {
+                var name = JSON.parse(result).name
+                if(name == undefined) {
+                    name = key
+                }
+
+                wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.avatar", function (result, key) {
+                    var img = JSON.parse(result)
+                    var url = "/img/blank.jpg";
+                    if(img != undefined) {
+                        if(img.errcode == undefined) {
+                            url = homeserver + "/_matrix/media/r0/download/" + img.url.substring(6)
+                        }
+                    }
+                    new_room(key, url, name)
+                })
+            }, key)
+            rooms.push(key)
+        }
+
+        for(var event_num in json.rooms.join[key].timeline.events) {
+            var event = json.rooms.join[key].timeline.events[event_num]
+            if(event.type == "m.room.message") {
+                if(user_info[event.sender] == undefined || user_info[event.sender].color == undefined) {
+                    get_user_info(event.sender)
+                }
+                dir = "in";
+                if(event.sender == "@" + user + ":" + homeserver.substring(8)) {
+                    dir = "out"
+                }
+
+                new_message(key, user_info[event.sender].url, user_info[event.sender].name, event.sender, event.content.body, event.event_id, dir, event.origin_server_ts, user_info[event.sender].color)
+            }
+        }
+    }
+
 }
 
 function get_user_info(user_id) {
@@ -369,9 +417,7 @@ function roomSwitch() {
     checked = document.querySelector('input[name="room_radio"]:checked')
     if(checked != null) {
         if(roomid == checked.value) {
-            console.log("trying to scroll?")
             msg_window = document.getElementById("message_window")
-            console.log(msg_window)
             msg_window.scrollTop = 999999999999999
         }
         roomid = checked.value
@@ -382,8 +428,21 @@ function roomSwitch() {
     }
 }
 
-function bump_room(id) {
-    document.getElementById("list").insertBefore(document.getElementById(id), list.childNodes[0])
+function sort_roomlist() {
+    var list = document.getElementById("list");
+
+    var items = list.getElementsByClassName("room_item");
+    var itemsArr = []
+    for(var i = 0 ; i < items.length; i++){
+        itemsArr.push(items[i])
+    }
+    itemsArr.sort(function(a, b) {
+        return b.getElementsByClassName("ts")[0].textContent - a.getElementsByClassName("ts")[0].textContent
+    });
+
+    for (i = 0; i < itemsArr.length; ++i) {
+        list.appendChild(itemsArr[i]);
+    }
 }
 
 function new_room(id, img, name) {
@@ -412,10 +471,9 @@ function new_room(id, img, name) {
     div.style.display = "none"
     document.getElementById("message_window").append(div)
     document.getElementById("list").append(room_element)
-    //bump_room(id)
 }
 
-function new_message(id, img, name, user_id, text, event_id, dir, time, color, unsent) {
+function new_message(id, img, name, user_id, text, event_id, dir, unixtime, color, unsent) {
     var prototype = document.getElementById("prototypes").getElementsByClassName("line")[0]
     var message = prototype.cloneNode(true)
 
@@ -433,12 +491,21 @@ function new_message(id, img, name, user_id, text, event_id, dir, time, color, u
     message.getElementsByTagName("b")[0].classList.add(color)
     message.getElementsByTagName("p")[0].textContent = text
     message.getElementsByTagName("p")[0].innerHTML = message.getElementsByTagName("p")[0].innerHTML.replace(/\n/g, "<br>")
-    message.getElementsByClassName("timestamp")[0].textContent = time
+    time = new Date(unixtime)
+    time_hours = time.getHours()
+    time_mins = time.getMinutes()
+    if (time_hours < 10) time_hours = "0" + time_hours
+    if (time_mins < 10) time_mins = "0" + time_mins
+    time_string = time_hours + ":" + time_mins
+    message.getElementsByClassName("timestamp")[0].textContent = time_string
+
+    var room = document.getElementById(id)
+    room.getElementsByClassName("timestamp")[0].textContent = time_string
+    room.getElementsByClassName("ts")[0].textContent = unixtime
 
     document.getElementById("messages_"+id).append(message)
     msg_window = document.getElementById("message_window")
     msg_window.scrollTop = msg_window.scrollHeight;
-    bump_room(id)
 }
 
 function get_caret(el) {
