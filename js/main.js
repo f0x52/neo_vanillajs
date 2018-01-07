@@ -249,16 +249,18 @@ function process_sync(json) {
 
         for(var event_num in json.rooms.join[key].timeline.events) {
             var event = json.rooms.join[key].timeline.events[event_num]
-            if(event.type == "m.room.message") {
-                if(user_info[event.sender] == undefined || user_info[event.sender].color == undefined) {
-                    get_user_info(event.sender)
-                }
-                dir = "in";
-                if(event.sender == "@" + user + ":" + homeserver.substring(8)) {
-                    dir = "out"
-                }
+            if(document.getElementById(event.event_id) == undefined) { //can 2 homeservers have the same event id for different events?
+                if(event.type == "m.room.message") {
+                    if(user_info[event.sender] == undefined || user_info[event.sender].color == undefined) {
+                        get_user_info(event.sender)
+                    }
+                    dir = "in";
+                    if(event.sender == "@" + user + ":" + homeserver.substring(8)) {
+                        dir = "out"
+                    }
 
-                new_message(key, user_info[event.sender].url, user_info[event.sender].name, event.sender, event.content.body, event.event_id, dir, event.origin_server_ts, user_info[event.sender].color)
+                    new_message(key, user_info[event.sender].url, user_info[event.sender].name, event.sender, event.content.body, event.event_id, dir, event.origin_server_ts, user_info[event.sender].color)
+                }
             }
         }
     }
@@ -456,9 +458,7 @@ function new_room(id, img, name) {
 
     room_element.getElementsByTagName("label")[0].htmlFor = id + "_radio"
     room_element.getElementsByTagName("label")[0].id = id
-
     room_element.getElementsByTagName("img")[0].src = img
-
     room_element.getElementsByTagName("span")[0].textContent = name
 
     var div = document.createElement('div')
@@ -491,16 +491,22 @@ function new_message(id, img, name, user_id, text, event_id, dir, unixtime, colo
     message.getElementsByTagName("b")[0].classList.add(color)
     message.getElementsByTagName("p")[0].textContent = text
     message.getElementsByTagName("p")[0].innerHTML = message.getElementsByTagName("p")[0].innerHTML.replace(/\n/g, "<br>")
+    now = new Date()
     time = new Date(unixtime)
     time_hours = time.getHours()
     time_mins = time.getMinutes()
     if (time_hours < 10) time_hours = "0" + time_hours
     if (time_mins < 10) time_mins = "0" + time_mins
     time_string = time_hours + ":" + time_mins
+    date_string = time.toLocaleDateString()
     message.getElementsByClassName("timestamp")[0].textContent = time_string
 
     var room = document.getElementById(id)
-    room.getElementsByClassName("timestamp")[0].textContent = time_string
+    if(now.getFullYear() == time.getFullYear() && now.getMonth() == time.getMonth() && now.getDate() == time.getDate()) {
+        room.getElementsByClassName("timestamp")[0].textContent = time_string
+    } else {
+        room.getElementsByClassName("timestamp")[0].textContent = date_string
+    }
     room.getElementsByClassName("ts")[0].textContent = unixtime
 
     document.getElementById("messages_"+id).append(message)
