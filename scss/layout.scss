@@ -60,6 +60,13 @@ html, body {
                 white-space: nowrap;
             }
 
+            .last_msg {
+                white-space: nowrap;
+                padding: 10px;
+                padding-top: 0;
+                padding-left: 80px;
+            }
+
             .timestamp {
                 position: absolute;
                 top: 10px;

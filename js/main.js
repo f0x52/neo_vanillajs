@@ -96,9 +96,6 @@ function resume(json) {
     text.select()
     resize_textarea()
     resumed=true
-    for(var key in json) {
-        room_backlog(key, 100, json[key].timeline.prev_batch)
-    }
 }
 
 function initial_sync() {
@@ -132,8 +129,9 @@ function initial_sync() {
                             })
                         }, key)
                         rooms.push(key)
-                        sort_roomlist()
                     }
+                    room_backlog(key, 100)
+                    sort_roomlist()
                 }
                 sync()
             } else {
@@ -150,7 +148,6 @@ function initial_sync() {
 function sync() {
     setTimeout(function () {
         show(document.getElementById("loading"))
-        console.log("sync")
         var xmlhttp = new XMLHttpRequest()
         var url = homeserver+"/_matrix/client/r0/sync?access_token=" + token + "&timeout=30000"
         if(next_batch != undefined) {
@@ -186,15 +183,17 @@ function room_backlog(room, num, from) {
     show(document.getElementById("loading"))
     console.log("room backlog")
     var xmlhttp = new XMLHttpRequest()
-    var url = homeserver+"/_matrix/client/r0/rooms/" + room + "/messages?access_token=" + token + "&from=" + from + "&limit=" + num + '&filter={"types": "m.room.message"}'
+    //var url = homeserver+"/_matrix/client/r0/rooms/" + room + "/messages?access_token=" + token + "&from=" + from + "&limit=" + num + '&filter={"type": "m.room.message"}&dir=b'
+    var url = homeserver+"/_matrix/client/r0/rooms/" + room + "/messages?access_token=" + token + "&limit=" + num + '&filter={"type": "m.room.message"}&dir=b'
+    console.log(url)
     xmlhttp.open("GET", url, true)
     xmlhttp.setRequestHeader("Content-type", "application/json")
     xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4 ) {
             if(xmlhttp.status === 200) {
                 json = JSON.parse(xmlhttp.responseText)
-                for(var event_num in json.chunk) {
-                    var event = json.chunk[event_num]
+                for(var i=json.chunk.length; i>0; i--) {
+                    var event = json.chunk[i-1]
                     if(event.type == "m.room.message") {
                         if(user_info[event.sender] == undefined || user_info[event.sender].color == undefined) {
                             get_user_info(event.sender)
@@ -204,9 +203,7 @@ function room_backlog(room, num, from) {
                             dir = "out"
                         }
 
-                        time = new Date(event.origin_server_ts)
-                        time_string = time.getHours() + ":" + time.getMinutes()
-                        new_message(room, user_info[event.sender].url, user_info[event.sender].name, event.sender, event.content.body, event.event_id, dir, time_string, user_info[event.sender].color)
+                        new_message(room, user_info[event.sender].url, user_info[event.sender].name, event.sender, event.content.body, event.event_id, dir, event.origin_server_ts, user_info[event.sender].color)
                     }
                 }
                 hide(document.getElementById("loading"))
@@ -418,16 +415,14 @@ function roomSwitch() {
     }
     checked = document.querySelector('input[name="room_radio"]:checked')
     if(checked != null) {
-        if(roomid == checked.value) {
-            msg_window = document.getElementById("message_window")
-            msg_window.scrollTop = 999999999999999
-        }
         roomid = checked.value
     }
     new_view = document.getElementById("messages_" + roomid)
     if(new_view != null) {
         new_view.style.display="block"
     }
+    var element = document.getElementById("message_window");
+    element.scrollTop = element.scrollHeight;
 }
 
 function sort_roomlist() {
@@ -508,10 +503,12 @@ function new_message(id, img, name, user_id, text, event_id, dir, unixtime, colo
         room.getElementsByClassName("timestamp")[0].textContent = date_string
     }
     room.getElementsByClassName("ts")[0].textContent = unixtime
+    room.getElementsByClassName("last_msg")[0].textContent = name + ": " + text
 
     document.getElementById("messages_"+id).append(message)
-    msg_window = document.getElementById("message_window")
-    msg_window.scrollTop = msg_window.scrollHeight;
+
+    var element = document.getElementById("message_window");
+    element.scrollTop = element.scrollHeight;
 }
 
 function get_caret(el) {
