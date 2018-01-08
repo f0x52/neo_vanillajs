@@ -185,7 +185,6 @@ function room_backlog(room, num, from) {
     var xmlhttp = new XMLHttpRequest()
     //var url = homeserver+"/_matrix/client/r0/rooms/" + room + "/messages?access_token=" + token + "&from=" + from + "&limit=" + num + '&filter={"type": "m.room.message"}&dir=b'
     var url = homeserver+"/_matrix/client/r0/rooms/" + room + "/messages?access_token=" + token + "&limit=" + num + '&filter={"type": "m.room.message"}&dir=b'
-    console.log(url)
     xmlhttp.open("GET", url, true)
     xmlhttp.setRequestHeader("Content-type", "application/json")
     xmlhttp.onreadystatechange = function () {
