@@ -1,5 +1,3 @@
-//hide(document.getElementsByClassName("login")[0])
-//show(document.getElementsByClassName("main")[0])
 var prev = 0
 var observe
 var roomid
@@ -131,7 +129,6 @@ function initial_sync() {
                         rooms.push(key)
                     }
                     room_backlog(key, 100)
-                    sort_roomlist()
                 }
                 sync()
             } else {
@@ -160,12 +157,50 @@ function sync() {
                 if(xmlhttp.status === 200) {
                     json = JSON.parse(xmlhttp.responseText)
                     next_batch = json.next_batch
-                    process_sync(json)
+                    for(var key in json.rooms.join) {
+                        if(!rooms.includes(key)) {
+                            wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.name", function (result) {
+                                var name = JSON.parse(result).name
+                                if(name == undefined) {
+                                    name = key
+                                }
+
+                                wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.avatar", function (result, key) {
+                                    var img = JSON.parse(result)
+                                    var url = "/img/blank.jpg";
+                                    if(img != undefined) {
+                                        if(img.errcode == undefined) {
+                                            url = homeserver + "/_matrix/media/r0/download/" + img.url.substring(6)
+                                        }
+                                    }
+                                    new_room(key, url, name)
+                                })
+                            }, key)
+                            rooms.push(key)
+                        }
+
+                        for(var event_num in json.rooms.join[key].timeline.events) {
+                            var event = json.rooms.join[key].timeline.events[event_num]
+                            if(document.getElementById(event.event_id) == undefined) { //can 2 homeservers have the same event id for different events?
+                                if(event.type == "m.room.message") {
+                                    if(user_info[event.sender] == undefined || user_info[event.sender].color == undefined) {
+                                        get_user_info(event.sender)
+                                    }
+                                    dir = "in";
+                                    if(event.sender == "@" + user + ":" + homeserver.substring(8)) {
+                                        dir = "out"
+                                    }
+
+                                    new_message(key, user_info[event.sender].url, user_info[event.sender].name, event.sender, event.content.body, event.event_id, dir, event.origin_server_ts, user_info[event.sender].color)
+                                }
+                            }
+                        }
+                    }
+
                     hide(document.getElementById("loading"))
                     if(!resumed) {
                         resume(json.rooms.join)
                     }
-                    sort_roomlist()
                     sync()
                 } else {
                     //something went wrong
@@ -212,8 +247,8 @@ function room_backlog(room, num, from) {
                 sync()
             } else {
                 //something went wrong
-                console.log("code: " + xmlhttp.status)
-                sync()
+                console.log("backlog for " + room + " failed with code: " + xmlhttp.status)
+                room_backlog(room, num, from)
             }
         }
     }
@@ -221,46 +256,6 @@ function room_backlog(room, num, from) {
 }
 
 function process_sync(json) {
-    for(var key in json.rooms.join) {
-        if(!rooms.includes(key)) {
-            wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.name", function (result) {
-                var name = JSON.parse(result).name
-                if(name == undefined) {
-                    name = key
-                }
-
-                wget(homeserver + "/_matrix/client/r0/rooms/" + key + "/state/m.room.avatar", function (result, key) {
-                    var img = JSON.parse(result)
-                    var url = "/img/blank.jpg";
-                    if(img != undefined) {
-                        if(img.errcode == undefined) {
-                            url = homeserver + "/_matrix/media/r0/download/" + img.url.substring(6)
-                        }
-                    }
-                    new_room(key, url, name)
-                })
-            }, key)
-            rooms.push(key)
-        }
-
-        for(var event_num in json.rooms.join[key].timeline.events) {
-            var event = json.rooms.join[key].timeline.events[event_num]
-            if(document.getElementById(event.event_id) == undefined) { //can 2 homeservers have the same event id for different events?
-                if(event.type == "m.room.message") {
-                    if(user_info[event.sender] == undefined || user_info[event.sender].color == undefined) {
-                        get_user_info(event.sender)
-                    }
-                    dir = "in";
-                    if(event.sender == "@" + user + ":" + homeserver.substring(8)) {
-                        dir = "out"
-                    }
-
-                    new_message(key, user_info[event.sender].url, user_info[event.sender].name, event.sender, event.content.body, event.event_id, dir, event.origin_server_ts, user_info[event.sender].color)
-                }
-            }
-        }
-    }
-
 }
 
 function get_user_info(user_id) {
@@ -484,6 +479,8 @@ function new_message(id, img, name, user_id, text, event_id, dir, unixtime, colo
 
     message.getElementsByTagName("b")[0].classList.add(color)
     message.getElementsByTagName("p")[0].textContent = text
+    message.getElementsByTagName("p")[0].innerHTML = message.getElementsByTagName("p")[0].innerHTML.linkify()
+
     message.getElementsByTagName("p")[0].innerHTML = message.getElementsByTagName("p")[0].innerHTML.replace(/\n/g, "<br>")
     now = new Date()
     time = new Date(unixtime)
@@ -508,6 +505,19 @@ function new_message(id, img, name, user_id, text, event_id, dir, unixtime, colo
 
     var element = document.getElementById("message_window");
     element.scrollTop = element.scrollHeight;
+    sort_roomlist()
+}
+
+if(!String.linkify) {
+    String.prototype.linkify = function() {
+        var urlPattern = /\b(?:https?|ftp):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
+        var pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+        var emailAddressPattern = /[\w.]+@[a-zA-Z_-]+?(?:\.[a-zA-Z]{2,6})+/gim;
+        return this
+            .replace(urlPattern, '<a href="$&">$&</a>')
+            .replace(pseudoUrlPattern, '$1<a href="http://$2">$2</a>')
+            .replace(emailAddressPattern, '<a href="mailto:$&">$&</a>');
+    };
 }
 
 function get_caret(el) {

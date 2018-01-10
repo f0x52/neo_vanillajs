@@ -20,6 +20,14 @@ html {
     font-family: sans-serif;
 }
 
+a {
+    color: darken($fg, 10);
+}
+
+a:hover {
+    color: darken($fg, 5);
+}
+
 .main {
     .list {
         background-color: lighten($bg, 2);
