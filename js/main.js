@@ -1,4 +1,3 @@
-var prev = 0
 var observe
 var roomid
 var checked = document.querySelector('input[name="room_radio"]:checked')
@@ -7,6 +6,7 @@ var user, token, next_batch, user_info
 var rooms = []
 var resumed = false
 var colors = ["red", "green", "yellow", "blue", "purple", "cyan", "grey"]
+var sent = []
 
 if(checked != null) {
     roomid = checked.value
