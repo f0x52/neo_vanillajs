@@ -34,7 +34,12 @@ a:hover {
         .room {
             border: 1px solid black;
         }
-        input[type="radio"]:checked + label {
+
+        .timestamp {
+            background-color: lighten($bg, 1);
+        }
+
+        input[type="radio"]:checked + label, input[type="radio"]:checked + label .timestamp {
              background-color: lighten($bg, 5);
         }
     }
